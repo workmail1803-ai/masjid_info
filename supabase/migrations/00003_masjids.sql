@@ -36,7 +36,7 @@ SELECT id, 0 FROM districts;
 -- Main Masjids Table
 -- ============================================================
 CREATE TABLE masjids (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Identifiers (immutable after creation)
   central_code VARCHAR(12) NOT NULL UNIQUE,

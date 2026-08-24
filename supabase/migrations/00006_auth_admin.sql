@@ -51,7 +51,7 @@ CREATE TYPE import_status AS ENUM (
 );
 
 CREATE TABLE import_batches (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   filename TEXT NOT NULL,
   total_rows INT NOT NULL DEFAULT 0,
   valid_rows INT NOT NULL DEFAULT 0,

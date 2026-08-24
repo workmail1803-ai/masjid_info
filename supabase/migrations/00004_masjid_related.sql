@@ -19,7 +19,7 @@ CREATE TYPE moderation_status AS ENUM (
 -- Masjid Images — source-aware image model
 -- ============================================================
 CREATE TABLE masjid_images (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   masjid_id UUID NOT NULL REFERENCES masjids(id) ON DELETE CASCADE,
 
   -- Source tracking
@@ -60,7 +60,7 @@ CREATE INDEX idx_mi_uploaded_by ON masjid_images (uploaded_by);
 -- Masjid Contacts
 -- ============================================================
 CREATE TABLE masjid_contacts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   masjid_id UUID NOT NULL REFERENCES masjids(id) ON DELETE CASCADE,
   contact_type VARCHAR(20) NOT NULL DEFAULT 'phone', -- phone, email, website
   label_bn TEXT,
@@ -77,7 +77,7 @@ CREATE INDEX idx_mc_primary ON masjid_contacts (masjid_id, is_primary) WHERE is_
 -- Masjid Ratings
 -- ============================================================
 CREATE TABLE masjid_ratings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   masjid_id UUID NOT NULL REFERENCES masjids(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   overall SMALLINT NOT NULL CHECK (overall BETWEEN 1 AND 5),
@@ -101,7 +101,7 @@ CREATE UNIQUE INDEX idx_mr_unique_user_masjid ON masjid_ratings (masjid_id, user
 -- Masjid Verifications
 -- ============================================================
 CREATE TABLE masjid_verifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   masjid_id UUID NOT NULL REFERENCES masjids(id) ON DELETE CASCADE,
   verified_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   verification_source TEXT,
@@ -123,7 +123,7 @@ CREATE TYPE submission_status AS ENUM (
 );
 
 CREATE TABLE masjid_submissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name_bn TEXT NOT NULL,
   name_en TEXT,
   division_id SMALLINT REFERENCES divisions(id),
@@ -168,7 +168,7 @@ CREATE TYPE correction_issue_type AS ENUM (
 );
 
 CREATE TABLE correction_requests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   masjid_id UUID NOT NULL REFERENCES masjids(id) ON DELETE CASCADE,
   issue_type correction_issue_type NOT NULL,
   description TEXT,

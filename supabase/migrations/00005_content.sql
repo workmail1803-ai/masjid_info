@@ -28,7 +28,7 @@ CREATE INDEX idx_categories_type_sort ON categories (type, sort_order);
 -- Notices
 -- ============================================================
 CREATE TABLE notices (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_bn TEXT NOT NULL,
   title_en TEXT,
   slug TEXT NOT NULL UNIQUE,
@@ -52,7 +52,7 @@ CREATE INDEX idx_notices_featured ON notices (is_featured, published_at DESC) WH
 -- News Posts
 -- ============================================================
 CREATE TABLE news_posts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_bn TEXT NOT NULL,
   title_en TEXT,
   slug TEXT NOT NULL UNIQUE,
@@ -82,7 +82,7 @@ CREATE INDEX idx_np_district ON news_posts (related_district_id);
 -- Islamic Topics
 -- ============================================================
 CREATE TABLE islamic_topics (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_bn TEXT NOT NULL,
   title_en TEXT,
   slug TEXT NOT NULL UNIQUE,
@@ -105,7 +105,7 @@ CREATE INDEX idx_it_category ON islamic_topics (category_id);
 -- Resources / Materials
 -- ============================================================
 CREATE TABLE resources (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_bn TEXT NOT NULL,
   title_en TEXT,
   slug TEXT NOT NULL UNIQUE,
@@ -130,7 +130,7 @@ CREATE INDEX idx_res_category ON resources (category_id);
 -- Activities
 -- ============================================================
 CREATE TABLE activities (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title_bn TEXT NOT NULL,
   title_en TEXT,
   slug TEXT NOT NULL UNIQUE,
