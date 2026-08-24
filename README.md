@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MOSJID.INFO
+
+**বাংলাদেশের মসজিদ তথ্য ও ডিরেক্টরি** — Bangladesh Mosque Information & Directory
+
+A nationwide mosque directory platform targeting 300,000+ mosques across Bangladesh.
+
+## Tech Stack
+
+- **Frontend**: Next.js 15 (App Router) + TypeScript + Tailwind CSS v4
+- **Backend**: Supabase (PostgreSQL + Auth + Storage + RLS)
+- **Map**: MapLibre GL JS + OpenFreeMap
+- **Fonts**: Hind Siliguri (Bangla) + Inter (Latin)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- npm or pnpm
+- A [Supabase](https://supabase.com) project
+
+### Setup
 
 ```bash
+# Clone
+git clone https://github.com/workmail1803-ai/masjid_info.git
+cd masjid_info/mosjid-info
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Database Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Apply the SQL migrations in `supabase/migrations/` to your Supabase project in order:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `00001_extensions.sql` — PostgreSQL extensions (pg_trgm, uuid-ossp, unaccent)
+2. `00002_geography.sql` — Divisions, Districts, Upazilas
+3. `00003_masjids.sql` — Core masjids table with indexes
+4. `00004_masjid_related.sql` — Images, contacts, ratings, submissions
+5. `00005_content.sql` — Notices, news, topics, resources
+6. `00006_auth_admin.sql` — Profiles, audit logs, import batches
+7. `00007_search.sql` — Optimized search RPC functions
+8. `00008_rls.sql` — Row Level Security policies
+9. `00009_stats_rpc.sql` — Dashboard statistics RPC
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── admin/              # Admin panel
+│   ├── api/                # API routes
+│   ├── masjid/             # Directory & detail pages
+│   ├── division/           # Division pages
+│   ├── district/           # District pages
+│   ├── upazila/            # Upazila pages
+│   ├── notices/            # Notice pages
+│   ├── news/               # News pages
+│   ├── topics/             # Topic pages
+│   ├── resources/          # Resource pages
+│   ├── about/              # About page
+│   └── contact/            # Contact page
+├── components/
+│   └── layout/             # Header, Footer, MobileNav
+├── config/                 # Site & navigation config
+├── features/               # Feature modules
+│   ├── admin/              # Admin forms & actions
+│   ├── contact/            # Contact form
+│   ├── directory/          # Search, filters, results
+│   └── submission/         # Public submission form
+├── lib/
+│   ├── services/           # Data access layer
+│   └── supabase/           # Supabase clients
+└── types/                  # TypeScript types
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All rights reserved.
