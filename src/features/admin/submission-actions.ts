@@ -92,8 +92,11 @@ export async function approveSubmission(
         thumbnail_path: url,
         card_path: url,
         detail_path: url,
-        // Community photos are shown only after a moderator approves them.
-        status: 'pending' as const,
+        // The reviewer sees every photo on the review page before clicking
+        // approve, so the human check has already happened. Leaving these
+        // 'pending' meant an approved mosque showed a placeholder instead of
+        // the photo its submitter provided.
+        status: 'approved' as const,
         is_primary: i === 0,
         sort_order: i,
       };

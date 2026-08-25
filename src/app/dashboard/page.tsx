@@ -102,11 +102,16 @@ export default async function DashboardPage() {
                     {mosqueRoleLabels[m.role]}
                   </span>
                 </div>
-                {m.masjid?.slug && (
-                  <Link href={`/masjid/${m.masjid.slug}`} className="btn btn-ghost btn-sm shrink-0">
-                    প্রোফাইল দেখুন
+                <div className="flex items-center gap-2 shrink-0">
+                  {m.masjid?.slug && (
+                    <Link href={`/masjid/${m.masjid.slug}`} className="btn btn-ghost btn-sm">
+                      প্রোফাইল
+                    </Link>
+                  )}
+                  <Link href={`/dashboard/mosque/${m.masjid_id}`} className="btn btn-primary btn-sm">
+                    ব্যবস্থাপনা
                   </Link>
-                )}
+                </div>
               </div>
             ))}
           </div>
