@@ -86,10 +86,9 @@ INSERT INTO districts (division_id, name_bn, name_en, slug, code, sort_order) VA
   ((SELECT id FROM divisions WHERE slug='rajshahi'), 'জয়পুরহাট', 'Joypurhat', 'joypurhat', '5038', 3),
   ((SELECT id FROM divisions WHERE slug='rajshahi'), 'নওগাঁ', 'Naogaon', 'naogaon', '5064', 4),
   ((SELECT id FROM divisions WHERE slug='rajshahi'), 'নাটোর', 'Natore', 'natore', '5069', 5),
-  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'নওয়াবগঞ্জ', 'Nawabganj', 'nawabganj', '5071', 6),
-  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'পাবনা', 'Pabna', 'pabna', '5076', 7),
-  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'রাজশাহী', 'Rajshahi', 'rajshahi', '5081', 8),
-  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'সিরাজগঞ্জ', 'Sirajganj', 'sirajganj', '5088', 9);
+  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'পাবনা', 'Pabna', 'pabna', '5076', 6),
+  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'রাজশাহী', 'Rajshahi', 'rajshahi', '5081', 7),
+  ((SELECT id FROM divisions WHERE slug='rajshahi'), 'সিরাজগঞ্জ', 'Sirajganj', 'sirajganj', '5088', 8);
 
 -- Rangpur Division (8 districts)
 INSERT INTO districts (division_id, name_bn, name_en, slug, code, sort_order) VALUES

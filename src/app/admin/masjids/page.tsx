@@ -6,6 +6,13 @@ interface PageProps {
   searchParams: Promise<Record<string, string | undefined>>;
 }
 
+/** Exactly the columns the admin list query selects, plus the joined district name. */
+type AdminMasjidRow = Pick<
+  Masjid,
+  'id' | 'central_code' | 'district_code' | 'slug' | 'name_bn' | 'name_en'
+  | 'verification_status' | 'status' | 'has_image' | 'created_at'
+> & { district: { name_bn: string } | null };
+
 export default async function AdminMasjidsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
@@ -20,7 +27,13 @@ export default async function AdminMasjidsPage({ searchParams }: PageProps) {
     .select('id, central_code, district_code, slug, name_bn, name_en, verification_status, status, has_image, created_at, district:districts(name_bn)', { count: 'exact' });
 
   if (q) {
-    query = query.or(`name_bn.ilike.%${q}%,name_en.ilike.%${q}%,central_code.ilike.%${q}%`);
+    // PostgREST parses `or=` as a comma-separated list, so raw user input containing
+    // commas, parentheses or quotes would break out of the intended filter. Strip the
+    // reserved characters rather than interpolating the query string verbatim.
+    const safeQ = q.replace(/[,()"'\\*]/g, ' ').trim();
+    if (safeQ) {
+      query = query.or(`name_bn.ilike.%${safeQ}%,name_en.ilike.%${safeQ}%,central_code.ilike.%${safeQ}%`);
+    }
   }
 
   const { data: masjids, count } = await query
@@ -61,7 +74,7 @@ export default async function AdminMasjidsPage({ searchParams }: PageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {(masjids || []).map((m: any) => (
+              {((masjids || []) as unknown as AdminMasjidRow[]).map((m) => (
                 <tr key={m.id} className="hover:bg-surface-alt/50">
                   <td className="p-3 font-mono text-xs" style={{ fontFamily: 'var(--font-latin)' }}>{m.central_code}</td>
                   <td className="p-3">
@@ -89,9 +102,9 @@ export default async function AdminMasjidsPage({ searchParams }: PageProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
-          {page > 1 && <a href={`/admin/masjids?page=${page - 1}&q=${q}`} className="btn btn-ghost btn-sm">← আগের</a>}
+          {page > 1 && <Link href={`/admin/masjids?page=${page - 1}&q=${q}`} className="btn btn-ghost btn-sm">← আগের</Link>}
           <span className="text-sm text-ink-muted">পৃষ্ঠা {page} / {totalPages}</span>
-          {page < totalPages && <a href={`/admin/masjids?page=${page + 1}&q=${q}`} className="btn btn-ghost btn-sm">পরের →</a>}
+          {page < totalPages && <Link href={`/admin/masjids?page=${page + 1}&q=${q}`} className="btn btn-ghost btn-sm">পরের →</Link>}
         </div>
       )}
     </div>

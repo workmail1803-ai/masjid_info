@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/**
+ * Refreshes the Supabase auth cookies and performs an *optimistic* auth check.
+ *
+ * Deliberately does not query `profiles` for the user's role: proxy runs on every
+ * request including prefetches, so the real authorization boundary lives in the
+ * Data Access Layer (`src/lib/auth/dal.ts`), called from the admin layout and
+ * from every admin server action.
+ */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -13,9 +21,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -27,25 +33,15 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('redirect', request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
+  const { pathname } = request.nextUrl;
+  const isProtected = pathname.startsWith('/admin') || pathname.startsWith('/dashboard');
 
-    // Check admin role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['admin', 'super_admin', 'moderator'].includes(profile.role)) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  if (!user && isProtected) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/login';
+    url.search = '';
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

@@ -28,7 +28,7 @@ export default async function DivisionPage({ params }: PageProps) {
   return (
     <div className="container-wide py-6 md:py-8">
       <nav className="text-xs text-ink-muted mb-4">
-        <a href="/" className="hover:text-accent">হোম</a> / <span className="text-ink">{division.name_bn} বিভাগ</span>
+        <Link href="/" className="hover:text-accent">হোম</Link> / <span className="text-ink">{division.name_bn} বিভাগ</span>
       </nav>
 
       <div className="divider-accent mb-3" />

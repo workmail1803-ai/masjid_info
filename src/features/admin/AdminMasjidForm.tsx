@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import type { Division, District } from '@/types/database';
 import { structureTypeLabels } from '@/types/database';
@@ -169,7 +170,7 @@ export function AdminMasjidForm({ divisions, districts }: Props) {
         <button type="submit" disabled={saving} className="btn btn-primary btn-lg disabled:opacity-50">
           {saving ? 'সংরক্ষণ হচ্ছে...' : 'মসজিদ সংরক্ষণ করুন'}
         </button>
-        <a href="/admin/masjids" className="btn btn-ghost btn-lg">বাতিল</a>
+        <Link href="/admin/masjids" className="btn btn-ghost btn-lg">বাতিল</Link>
       </div>
     </form>
   );

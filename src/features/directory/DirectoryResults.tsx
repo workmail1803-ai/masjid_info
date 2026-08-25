@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { MasjidSearchResult } from '@/types/database';
-import { structureTypeLabels, verificationLabels } from '@/types/database';
+import { structureTypeLabels } from '@/types/database';
 
 interface Props {
   results: MasjidSearchResult[];

@@ -4,6 +4,16 @@ import Link from 'next/link';
 import { getMasjidBySlug, getMasjidImages } from '@/lib/services/masjid.service';
 import { structureTypeLabels, verificationLabels } from '@/types/database';
 import { siteConfig } from '@/config/site';
+import {
+  getPrayerTimes, getMosqueStaff, getCommittee, getCommunityServices,
+  getFinancialSummary, getMonthlyFinancials, getZakatSummary, getZakatByCategory,
+  getTransparencyScore, getCampaigns, getProjects, getPublicDocuments,
+} from '@/lib/services/mosque.service';
+import {
+  TransparencySection, PrayerSection, StaffSection, CommitteeSection,
+  ServicesSection, FinanceSection, ZakatSection, CampaignsSection,
+  ProjectsSection, DocumentsSection, ReportSection,
+} from '@/features/mosque/ProfileSections';
 
 export const revalidate = 3600; // 1 hour ISR
 
@@ -42,6 +52,27 @@ export default async function MasjidDetailPage({ params }: PageProps) {
 
   const images = await getMasjidImages(masjid.id);
   const primaryImage = images.find(img => img.is_primary) || images[0];
+
+  // Management & transparency data. Fetched in parallel so adding these
+  // sections costs one round trip, not eleven.
+  const [
+    prayerSchedules, staff, committee, services,
+    finance, monthly, zakat, zakatByCategory,
+    transparency, campaigns, projects, documents,
+  ] = await Promise.all([
+    getPrayerTimes(masjid.id),
+    getMosqueStaff(masjid.id),
+    getCommittee(masjid.id),
+    getCommunityServices(masjid.id),
+    getFinancialSummary(masjid.id),
+    getMonthlyFinancials(masjid.id, 6),
+    getZakatSummary(masjid.id),
+    getZakatByCategory(masjid.id),
+    getTransparencyScore(masjid.id),
+    getCampaigns(masjid.id),
+    getProjects(masjid.id),
+    getPublicDocuments(masjid.id),
+  ]);
 
   return (
     <div className="container-wide py-6 md:py-8">
@@ -252,6 +283,23 @@ export default async function MasjidDetailPage({ params }: PageProps) {
             </div>
           )}
         </aside>
+      </div>
+
+      {/* ============================================================
+          Mosque Management & Transparency
+          ============================================================ */}
+      <div className="mt-10 space-y-8">
+        <TransparencySection total={transparency.total} factors={transparency.factors} />
+        <PrayerSection schedules={prayerSchedules} />
+        <StaffSection staff={staff} officialPhone={masjid.official_phone ?? masjid.contact_number ?? null} />
+        <CommitteeSection members={committee} />
+        <ServicesSection services={services} />
+        <FinanceSection summary={finance} monthly={monthly} />
+        <ZakatSection summary={zakat} byCategory={zakatByCategory} />
+        <CampaignsSection campaigns={campaigns} />
+        <ProjectsSection projects={projects} />
+        <DocumentsSection documents={documents} />
+        <ReportSection masjidSlug={masjid.slug} />
       </div>
 
       {/* JSON-LD Structured Data */}

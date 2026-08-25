@@ -26,7 +26,7 @@ export function Header() {
           <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
             {navigation.main.map((item) => (
               <Link
-                key={item.href}
+                key={item.id}
                 href={item.href}
                 className="px-3 py-2 text-sm text-ink-light hover:text-ink hover:bg-surface-alt rounded-md transition-colors"
               >

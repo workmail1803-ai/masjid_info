@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function DistrictPage({ params }: PageProps) {
   const { slug } = await params;
-  const district = await getDistrictBySlug(slug) as any;
+  const district = await getDistrictBySlug(slug);
   if (!district) notFound();
 
   const [upazilas, count, { results: masjids }] = await Promise.all([
@@ -29,8 +29,8 @@ export default async function DistrictPage({ params }: PageProps) {
   return (
     <div className="container-wide py-6 md:py-8">
       <nav className="text-xs text-ink-muted mb-4">
-        <a href="/" className="hover:text-accent">হোম</a> /
-        {district.division && <> <a href={`/division/${district.division.slug}`} className="hover:text-accent">{district.division.name_bn}</a> / </>}
+        <Link href="/" className="hover:text-accent">হোম</Link> /
+        {district.division && <> <Link href={`/division/${district.division.slug}`} className="hover:text-accent">{district.division.name_bn}</Link> / </>}
         <span className="text-ink">{district.name_bn}</span>
       </nav>
 

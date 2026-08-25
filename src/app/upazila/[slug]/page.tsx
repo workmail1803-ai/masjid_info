@@ -24,9 +24,9 @@ export default async function UpazilaPage({ params }: PageProps) {
   return (
     <div className="container-wide py-6 md:py-8">
       <nav className="text-xs text-ink-muted mb-4">
-        <a href="/" className="hover:text-accent">হোম</a> /
-        <a href={`/division/${upazila.district.division.slug}`} className="hover:text-accent"> {upazila.district.division.name_bn}</a> /
-        <a href={`/district/${upazila.district.slug}`} className="hover:text-accent"> {upazila.district.name_bn}</a> /
+        <Link href="/" className="hover:text-accent">হোম</Link> /
+        <Link href={`/division/${upazila.district.division.slug}`} className="hover:text-accent"> {upazila.district.division.name_bn}</Link> /
+        <Link href={`/district/${upazila.district.slug}`} className="hover:text-accent"> {upazila.district.name_bn}</Link> /
         <span className="text-ink"> {upazila.name_bn}</span>
       </nav>
 
@@ -51,7 +51,7 @@ export default async function UpazilaPage({ params }: PageProps) {
       ) : (
         <div className="card p-12 text-center">
           <p className="text-ink-muted">এই উপজেলায় এখনো কোনো মসজিদের তথ্য পাওয়া যায়নি।</p>
-          <a href="/masjid/add" className="btn btn-secondary btn-sm mt-4">একটি মসজিদ যোগ করুন</a>
+          <Link href="/masjid/add" className="btn btn-secondary btn-sm mt-4">একটি মসজিদ যোগ করুন</Link>
         </div>
       )}
     </div>

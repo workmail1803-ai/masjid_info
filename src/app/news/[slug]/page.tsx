@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getNewsBySlug } from '@/lib/services/content.service';
@@ -19,7 +20,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
   return (
     <div className="container-wide py-6 md:py-8 max-w-3xl mx-auto">
-      <nav className="text-xs text-ink-muted mb-4"><a href="/news" className="hover:text-accent">সংবাদ</a> / <span className="text-ink truncate">{post.title_bn}</span></nav>
+      <nav className="text-xs text-ink-muted mb-4"><Link href="/news" className="hover:text-accent">সংবাদ</Link> / <span className="text-ink truncate">{post.title_bn}</span></nav>
       <article>
         <h1 className="text-2xl md:text-3xl font-bold text-ink mb-2">{post.title_bn}</h1>
         <div className="flex items-center gap-3 text-xs text-ink-faint mb-6">

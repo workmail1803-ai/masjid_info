@@ -69,6 +69,22 @@ export interface Masjid {
   established_year: number | null;
   contact_number: string | null;
   email: string | null;
+
+  // Facilities & official contact — added in migration 00012.
+  capacity: number | null;
+  floors: number | null;
+  has_women_prayer_area: boolean;
+  has_wudu_facility: boolean;
+  has_toilet: boolean;
+  has_parking: boolean;
+  is_wheelchair_accessible: boolean;
+  has_ac: boolean;
+  has_library: boolean;
+  official_phone: string | null;
+  official_email: string | null;
+  history_bn: string | null;
+  history_en: string | null;
+
   rating_average: number;
   rating_count: number;
   has_image: boolean;

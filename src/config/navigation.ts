@@ -1,20 +1,23 @@
+// Site navigation. Every item carries a stable `id` used as the React key —
+// hrefs are not unique enough (several sections can point at the same route).
 export const navigation = {
   main: [
-    { labelBn: 'হোম', labelEn: 'Home', href: '/' },
-    { labelBn: 'মসজিদ ডিরেক্টরি', labelEn: 'Masjid Directory', href: '/masjid' },
-    { labelBn: 'মসজিদের তথ্য', labelEn: 'Masjid Information', href: '/news' },
-    { labelBn: 'কার্যক্রম', labelEn: 'Activities', href: '/topics' },
-    { labelBn: 'নোটিশ বোর্ড', labelEn: 'Notice Board', href: '/notices' },
-    { labelBn: 'ইসলামিক বিষয়', labelEn: 'Islamic Topics', href: '/topics' },
-    { labelBn: 'সম্পর্কে', labelEn: 'About', href: '/about' },
-    { labelBn: 'যোগাযোগ', labelEn: 'Contact', href: '/contact' },
+    { id: 'home', labelBn: 'হোম', labelEn: 'Home', href: '/' },
+    { id: 'directory', labelBn: 'মসজিদ ডিরেক্টরি', labelEn: 'Masjid Directory', href: '/masjid' },
+    { id: 'news', labelBn: 'মসজিদের সংবাদ', labelEn: 'Masjid News', href: '/news' },
+    { id: 'activities', labelBn: 'কার্যক্রম', labelEn: 'Activities', href: '/activities' },
+    { id: 'notices', labelBn: 'নোটিশ বোর্ড', labelEn: 'Notice Board', href: '/notices' },
+    { id: 'topics', labelBn: 'ইসলামিক বিষয়', labelEn: 'Islamic Topics', href: '/topics' },
+    { id: 'resources', labelBn: 'উপকরণ', labelEn: 'Resources', href: '/resources' },
+    { id: 'about', labelBn: 'সম্পর্কে', labelEn: 'About', href: '/about' },
+    { id: 'contact', labelBn: 'যোগাযোগ', labelEn: 'Contact', href: '/contact' },
   ],
   mobile: [
-    { labelBn: 'হোম', labelEn: 'Home', href: '/', icon: 'home' },
-    { labelBn: 'ডিরেক্টরি', labelEn: 'Directory', href: '/masjid', icon: 'search' },
-    { labelBn: 'নোটিশ', labelEn: 'Notices', href: '/notices', icon: 'bell' },
-    { labelBn: 'বিষয়', labelEn: 'Topics', href: '/topics', icon: 'book' },
-    { labelBn: 'আরও', labelEn: 'More', href: '#more', icon: 'menu' },
+    { id: 'home', labelBn: 'হোম', labelEn: 'Home', href: '/', icon: 'home' },
+    { id: 'directory', labelBn: 'ডিরেক্টরি', labelEn: 'Directory', href: '/masjid', icon: 'search' },
+    { id: 'notices', labelBn: 'নোটিশ', labelEn: 'Notices', href: '/notices', icon: 'bell' },
+    { id: 'topics', labelBn: 'বিষয়', labelEn: 'Topics', href: '/topics', icon: 'book' },
+    { id: 'more', labelBn: 'আরও', labelEn: 'More', href: '#more', icon: 'menu' },
   ],
   cta: {
     primary: { labelBn: 'মসজিদ খুঁজুন', labelEn: 'Find Mosque', href: '/masjid' },

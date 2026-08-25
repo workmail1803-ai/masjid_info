@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SubmissionForm } from '@/features/submission/SubmissionForm';
 import { getDivisions, getDistricts } from '@/lib/services/geography.service';
@@ -17,9 +18,9 @@ export default async function AddMasjidPage() {
     <div className="container-wide py-6 md:py-8 max-w-3xl mx-auto">
       <nav className="text-xs text-ink-muted mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center gap-1">
-          <li><a href="/" className="hover:text-accent">হোম</a></li>
+          <li><Link href="/" className="hover:text-accent">হোম</Link></li>
           <li>/</li>
-          <li><a href="/masjid" className="hover:text-accent">ডিরেক্টরি</a></li>
+          <li><Link href="/masjid" className="hover:text-accent">ডিরেক্টরি</Link></li>
           <li>/</li>
           <li className="text-ink">মসজিদ যোগ করুন</li>
         </ol>

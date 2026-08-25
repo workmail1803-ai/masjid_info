@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useCallback, useTransition } from 'react';
 import type { Division, District, DirectoryFilters } from '@/types/database';
 import { structureTypeLabels, verificationLabels } from '@/types/database';

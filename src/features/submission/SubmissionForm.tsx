@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useCallback } from 'react';
 import type { Division, District } from '@/types/database';
 import { structureTypeLabels } from '@/types/database';
@@ -50,7 +51,7 @@ export function SubmissionForm({ divisions, districts }: Props) {
         <p className="text-sm text-ink-muted mb-4">
           আপনার মসজিদের তথ্য সফলভাবে জমা হয়েছে। যাচাইয়ের পর এটি ডিরেক্টরিতে প্রকাশিত হবে।
         </p>
-        <a href="/masjid" className="btn btn-primary">ডিরেক্টরিতে ফিরুন</a>
+        <Link href="/masjid" className="btn btn-primary">ডিরেক্টরিতে ফিরুন</Link>
       </div>
     );
   }

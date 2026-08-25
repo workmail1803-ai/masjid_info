@@ -31,7 +31,7 @@ export function MobileNav() {
           <nav className="container-wide py-4 flex flex-col gap-1" aria-label="Mobile navigation">
             {navigation.main.map((item) => (
               <Link
-                key={item.href}
+                key={item.id}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className="px-4 py-3 text-base text-ink-light hover:text-ink hover:bg-surface-alt rounded-md transition-colors"

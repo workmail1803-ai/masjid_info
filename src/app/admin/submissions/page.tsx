@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import type { MasjidSubmission } from '@/types/database';
 
 export default async function AdminSubmissionsPage() {
   const supabase = await createServerSupabaseClient();
@@ -27,7 +28,7 @@ export default async function AdminSubmissionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {(submissions || []).map((s: any) => (
+              {((submissions || []) as MasjidSubmission[]).map((s) => (
                 <tr key={s.id} className="hover:bg-surface-alt/50">
                   <td className="p-3">
                     <div className="font-medium text-ink">{s.name_bn}</div>

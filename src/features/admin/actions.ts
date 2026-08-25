@@ -1,55 +1,195 @@
 'use server';
 
-import { createAdminClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import slugify from 'slugify';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireModerator, getCurrentUser } from '@/lib/auth/dal';
 
-export async function createMasjidAdmin(formData: FormData): Promise<{ success: boolean; error?: string; id?: string }> {
-  try {
-    const name_bn = formData.get('name_bn') as string;
-    const name_en = formData.get('name_en') as string;
-    const division_id = Number(formData.get('division_id'));
-    const district_id = Number(formData.get('district_id'));
+/**
+ * Platform-admin mosque creation.
+ *
+ * Previously this action used the service-role client (which bypasses RLS)
+ * with no authentication check at all. Server Actions are reachable by POST
+ * from outside the `/admin` path, so the proxy redirect was not protecting it.
+ *
+ * It now (a) requires a platform moderator, and (b) uses the *request-scoped*
+ * client so RLS still applies as a second line of defence.
+ */
 
-    if (!name_bn || !division_id || !district_id) {
-      return { success: false, error: 'নাম, বিভাগ, ও জেলা আবশ্যক' };
-    }
+const STRUCTURE_TYPES = [
+  'small', 'medium', 'large', 'multi_storey',
+  'tin_shed', 'semi_permanent', 'under_construction', 'unknown',
+] as const;
 
-    // Generate slug
-    const baseSlug = slugify(name_en || name_bn, { lower: true, strict: true });
-    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+const VERIFICATION_STATUSES = [
+  'unverified', 'pending', 'verified', 'needs_review', 'rejected', 'archived',
+] as const;
 
-    const supabase = createAdminClient();
+const PUBLISH_STATUSES = ['draft', 'published', 'archived'] as const;
 
-    const { data, error } = await supabase.from('masjids').insert({
-      name_bn: name_bn.trim(),
-      name_en: name_en?.trim() || null,
-      slug,
-      division_id,
-      district_id,
-      upazila_id: formData.get('upazila_id') ? Number(formData.get('upazila_id')) : null,
-      area_name_bn: (formData.get('area_name_bn') as string)?.trim() || null,
-      area_name_en: (formData.get('area_name_en') as string)?.trim() || null,
-      address_bn: (formData.get('address_bn') as string)?.trim() || null,
-      latitude: formData.get('latitude') ? Number(formData.get('latitude')) : null,
-      longitude: formData.get('longitude') ? Number(formData.get('longitude')) : null,
-      structure_type: (formData.get('structure_type') as string) || 'unknown',
-      established_year: formData.get('established_year') ? Number(formData.get('established_year')) : null,
-      description_bn: (formData.get('description_bn') as string)?.trim() || null,
-      contact_number: (formData.get('contact_number') as string)?.trim() || null,
-      email: (formData.get('email') as string)?.trim() || null,
-      status: (formData.get('status') as string) || 'draft',
-      verification_status: (formData.get('verification_status') as string) || 'unverified',
-      has_contact: !!((formData.get('contact_number') as string)?.trim() || (formData.get('email') as string)?.trim()),
-    }).select('id').single();
+const optionalText = (max: number) =>
+  z.string().trim().max(max).optional().or(z.literal('')).transform((v) => v || null);
 
-    if (error) {
-      console.error('Admin create error:', error);
-      return { success: false, error: error.message };
-    }
+const createMasjidSchema = z.object({
+  name_bn: z.string().trim().min(2, 'মসজিদের নাম আবশ্যক।').max(300),
+  name_en: optionalText(300),
+  division_id: z.coerce.number().int().positive('বিভাগ নির্বাচন করুন।'),
+  district_id: z.coerce.number().int().positive('জেলা নির্বাচন করুন।'),
+  upazila_id: z.coerce.number().int().positive().optional().nullable(),
+  area_name_bn: optionalText(200),
+  area_name_en: optionalText(200),
+  address_bn: optionalText(500),
+  latitude: z.coerce.number().min(-90).max(90).optional().nullable(),
+  longitude: z.coerce.number().min(-180).max(180).optional().nullable(),
+  structure_type: z.enum(STRUCTURE_TYPES).default('unknown'),
+  established_year: z.coerce.number().int().min(600).max(2100).optional().nullable(),
+  description_bn: optionalText(5000),
+  contact_number: optionalText(20),
+  email: z.string().email().optional().or(z.literal('')).transform((v) => v || null),
+  status: z.enum(PUBLISH_STATUSES).default('draft'),
+  verification_status: z.enum(VERIFICATION_STATUSES).default('unverified'),
+});
 
-    return { success: true, id: data?.id };
-  } catch (err) {
-    console.error('Create masjid error:', err);
-    return { success: false, error: 'সমস্যা হয়েছে' };
+function numberOrNull(value: FormDataEntryValue | null): number | null {
+  if (value === null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+export async function createMasjidAdmin(
+  formData: FormData
+): Promise<{ success: boolean; error?: string; id?: string }> {
+  // Authorization first — before reading a single field.
+  const user = await requireModerator();
+
+  const parsed = createMasjidSchema.safeParse({
+    name_bn: formData.get('name_bn'),
+    name_en: formData.get('name_en') ?? '',
+    division_id: formData.get('division_id'),
+    district_id: formData.get('district_id'),
+    upazila_id: numberOrNull(formData.get('upazila_id')),
+    area_name_bn: formData.get('area_name_bn') ?? '',
+    area_name_en: formData.get('area_name_en') ?? '',
+    address_bn: formData.get('address_bn') ?? '',
+    latitude: numberOrNull(formData.get('latitude')),
+    longitude: numberOrNull(formData.get('longitude')),
+    structure_type: formData.get('structure_type') || 'unknown',
+    established_year: numberOrNull(formData.get('established_year')),
+    description_bn: formData.get('description_bn') ?? '',
+    contact_number: formData.get('contact_number') ?? '',
+    email: formData.get('email') ?? '',
+    status: formData.get('status') || 'draft',
+    verification_status: formData.get('verification_status') || 'unverified',
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'তথ্য সঠিক নয়।' };
   }
+
+  const input = parsed.data;
+
+  // slugify() returns '' for pure Bangla input, which would violate the NOT NULL
+  // slug constraint and collide across rows. Fall back to the central code shape.
+  const base = slugify(input.name_en || input.name_bn, { lower: true, strict: true });
+  const slug = `${base || 'masjid'}-${Date.now().toString(36)}`;
+
+  const supabase = await createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('masjids')
+    .insert({
+      name_bn: input.name_bn,
+      name_en: input.name_en,
+      slug,
+      division_id: input.division_id,
+      district_id: input.district_id,
+      upazila_id: input.upazila_id ?? null,
+      area_name_bn: input.area_name_bn,
+      area_name_en: input.area_name_en,
+      address_bn: input.address_bn,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+      structure_type: input.structure_type,
+      established_year: input.established_year ?? null,
+      description_bn: input.description_bn,
+      contact_number: input.contact_number,
+      email: input.email,
+      status: input.status,
+      verification_status: input.verification_status,
+      has_contact: Boolean(input.contact_number || input.email),
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Admin create error:', error.message);
+    return { success: false, error: 'সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।' };
+  }
+
+  await supabase.from('audit_logs').insert({
+    user_id: user.id,
+    action: 'create',
+    entity_type: 'masjid',
+    entity_id: data.id,
+    new_data: { name_bn: input.name_bn, status: input.status },
+  });
+
+  revalidatePath('/admin/masjids');
+  revalidatePath('/masjid');
+
+  return { success: true, id: data.id };
+}
+
+// ============================================================
+// Mosque claim review (platform admin only)
+// ============================================================
+
+const reviewSchema = z.object({
+  claim_id: z.string().uuid(),
+  notes: z.string().trim().max(2000).optional().or(z.literal('')),
+});
+
+async function reviewClaim(
+  formData: FormData,
+  rpc: 'approve_mosque_claim' | 'reject_mosque_claim'
+): Promise<{ success: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { success: false, error: 'লগইন প্রয়োজন।' };
+
+  const parsed = reviewSchema.safeParse({
+    claim_id: formData.get('claim_id'),
+    notes: formData.get('notes') ?? '',
+  });
+  if (!parsed.success) return { success: false, error: 'তথ্য সঠিক নয়।' };
+
+  const supabase = await createServerSupabaseClient();
+
+  // The SQL function re-checks is_admin() itself and raises on failure, so the
+  // authorization decision lives in the database, not only here.
+  const { error } = await supabase.rpc(rpc, {
+    p_claim_id: parsed.data.claim_id,
+    p_notes: parsed.data.notes || null,
+  });
+
+  if (error) {
+    console.error(`${rpc} failed:`, error.message);
+    return {
+      success: false,
+      error: error.message.includes('insufficient_privilege') || error.code === '42501'
+        ? 'এই কাজটি করার অনুমতি আপনার নেই।'
+        : 'কাজটি সম্পন্ন করা যায়নি।',
+    };
+  }
+
+  revalidatePath('/admin/claims');
+  return { success: true };
+}
+
+export async function approveMosqueClaim(formData: FormData) {
+  return reviewClaim(formData, 'approve_mosque_claim');
+}
+
+export async function rejectMosqueClaim(formData: FormData) {
+  return reviewClaim(formData, 'reject_mosque_claim');
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export default async function AdminDashboard() {
@@ -44,18 +45,18 @@ export default async function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-3 gap-4">
-        <a href="/admin/masjids/new" className="card p-4 hover:border-accent transition-all group">
+        <Link href="/admin/masjids/new" className="card p-4 hover:border-accent transition-all group">
           <h3 className="font-semibold text-ink group-hover:text-accent">➕ নতুন মসজিদ</h3>
           <p className="text-xs text-ink-muted mt-1">দ্রুত তথ্য এন্ট্রি</p>
-        </a>
-        <a href="/admin/submissions" className="card p-4 hover:border-accent transition-all group">
+        </Link>
+        <Link href="/admin/submissions" className="card p-4 hover:border-accent transition-all group">
           <h3 className="font-semibold text-ink group-hover:text-accent">📥 জমা পর্যালোচনা</h3>
           <p className="text-xs text-ink-muted mt-1">{pendingSubmissions || 0} টি অপেক্ষমান</p>
-        </a>
-        <a href="/admin/import" className="card p-4 hover:border-accent transition-all group">
+        </Link>
+        <Link href="/admin/import" className="card p-4 hover:border-accent transition-all group">
           <h3 className="font-semibold text-ink group-hover:text-accent">📤 বাল্ক আমদানি</h3>
           <p className="text-xs text-ink-muted mt-1">CSV/JSON আমদানি</p>
-        </a>
+        </Link>
       </div>
     </div>
   );
