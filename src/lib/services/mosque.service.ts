@@ -342,7 +342,7 @@ export async function getPublicDocuments(masjidId: string): Promise<PublicDocume
 export async function getPublicChangeHistory(masjidId: string, limit = 15) {
   const supabase = createStaticSupabaseClient();
   const { data, error } = await supabase
-    .from('masjid_change_history')
+    .from('public_masjid_updates')
     .select('id, action, field_name, created_at')
     .eq('masjid_id', masjidId)
     .order('created_at', { ascending: false })

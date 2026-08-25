@@ -18,6 +18,10 @@ const adminNav = [
   { label: 'মসজিদ', href: '/admin/masjids', icon: '🕌' },
   { label: 'জমা', href: '/admin/submissions', icon: '📥' },
   { label: 'মসজিদ দাবি', href: '/admin/claims', icon: '🔑' },
+  { label: 'সংবাদ', href: '/admin/news', icon: '📰' },
+  { label: 'নোটিশ', href: '/admin/notices', icon: '📋' },
+  { label: 'ইসলামিক বিষয়', href: '/admin/topics', icon: '📚' },
+  { label: 'উপকরণ', href: '/admin/resources', icon: '📁' },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
