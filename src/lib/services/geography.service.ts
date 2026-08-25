@@ -1,9 +1,9 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createStaticSupabaseClient } from '@/lib/supabase/static';
 import type { Division, District, Upazila } from '@/types/database';
 
 // All divisions (8 rows — safe to cache aggressively)
 export async function getDivisions(): Promise<Division[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('divisions')
     .select('*')
@@ -13,7 +13,7 @@ export async function getDivisions(): Promise<Division[]> {
 
 // All districts (64 rows)
 export async function getDistricts(): Promise<District[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('districts')
     .select('*')
@@ -23,7 +23,7 @@ export async function getDistricts(): Promise<District[]> {
 
 // Districts by division
 export async function getDistrictsByDivision(divisionId: number): Promise<District[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('districts')
     .select('*')
@@ -34,7 +34,7 @@ export async function getDistrictsByDivision(divisionId: number): Promise<Distri
 
 // Upazilas by district
 export async function getUpazilasByDistrict(districtId: number): Promise<Upazila[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('upazilas')
     .select('*')
@@ -45,7 +45,7 @@ export async function getUpazilasByDistrict(districtId: number): Promise<Upazila
 
 // Single geography by slug
 export async function getDivisionBySlug(slug: string): Promise<Division | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('divisions')
     .select('*')
@@ -54,8 +54,8 @@ export async function getDivisionBySlug(slug: string): Promise<Division | null> 
   return data as Division | null;
 }
 
-export async function getDistrictBySlug(slug: string): Promise<District | null> {
-  const supabase = await createServerSupabaseClient();
+export async function getDistrictBySlug(slug: string): Promise<(District & { division: Division }) | null> {
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('districts')
     .select('*, division:divisions(*)')
@@ -65,7 +65,7 @@ export async function getDistrictBySlug(slug: string): Promise<District | null> 
 }
 
 export async function getUpazilaBySlug(slug: string): Promise<(Upazila & { district: District & { division: Division } }) | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('upazilas')
     .select('*, district:districts(*, division:divisions(*))')
@@ -76,7 +76,7 @@ export async function getUpazilaBySlug(slug: string): Promise<(Upazila & { distr
 
 // Count masjids per district (for location pages)
 export async function getMasjidCountByDistrict(districtId: number): Promise<number> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { count } = await supabase
     .from('masjids')
     .select('id', { count: 'exact', head: true })

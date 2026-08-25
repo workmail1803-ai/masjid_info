@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { searchMasjids } from '@/lib/services/masjid.service';
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
   title: 'মসজিদ ডিরেক্টরি',
   description: 'বাংলাদেশের সকল মসজিদের ডিরেক্টরি। বিভাগ, জেলা, উপজেলা অনুসারে খুঁজুন।',
 };
+
+// Cache search results for 60 seconds — stale-while-revalidate ensures the
+// next visitor after expiry still gets the cached version instantly while
+// Vercel re-renders in the background.
+export const revalidate = 60;
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -44,7 +50,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
       {/* Breadcrumbs */}
       <nav className="text-xs text-ink-muted mb-4" aria-label="Breadcrumb">
         <ol className="flex items-center gap-1">
-          <li><a href="/" className="hover:text-accent">হোম</a></li>
+          <li><Link href="/" className="hover:text-accent">হোম</Link></li>
           <li>/</li>
           <li className="text-ink">মসজিদ ডিরেক্টরি</li>
         </ol>
@@ -116,9 +122,9 @@ function EmptyDirectoryState({ query }: { query?: string }) {
           : 'এই এলাকায় এখনো কোনো মসজিদের তথ্য পাওয়া যায়নি।'
         }
       </p>
-      <a href="/masjid/add" className="btn btn-secondary btn-sm mt-4">
+      <Link href="/masjid/add" className="btn btn-secondary btn-sm mt-4">
         একটি মসজিদ যোগ করুন
-      </a>
+      </Link>
     </div>
   );
 }
@@ -153,10 +159,10 @@ function DirectoryPagination({
   return (
     <nav className="flex items-center justify-center gap-1 mt-8" aria-label="পৃষ্ঠা নেভিগেশন">
       {currentPage > 1 && (
-        <a href={buildUrl(currentPage - 1)} className="btn btn-ghost btn-sm">← আগের</a>
+        <Link href={buildUrl(currentPage - 1)} className="btn btn-ghost btn-sm">← আগের</Link>
       )}
       {pages.map((page) => (
-        <a
+        <Link
           key={page}
           href={buildUrl(page)}
           className={`btn btn-sm min-w-[2.5rem] ${page === currentPage ? 'btn-primary' : 'btn-ghost'}`}
@@ -164,10 +170,10 @@ function DirectoryPagination({
           style={{ fontFamily: 'var(--font-latin)' }}
         >
           {page}
-        </a>
+        </Link>
       ))}
       {currentPage < totalPages && (
-        <a href={buildUrl(currentPage + 1)} className="btn btn-ghost btn-sm">পরের →</a>
+        <Link href={buildUrl(currentPage + 1)} className="btn btn-ghost btn-sm">পরের →</Link>
       )}
     </nav>
   );

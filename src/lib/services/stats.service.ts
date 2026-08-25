@@ -1,8 +1,8 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createStaticSupabaseClient } from '@/lib/supabase/static';
 import type { DirectoryStats } from '@/types/database';
 
 export async function getDirectoryStats(): Promise<DirectoryStats> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase.rpc('get_directory_stats');
 

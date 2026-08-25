@@ -1,11 +1,11 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createStaticSupabaseClient } from '@/lib/supabase/static';
 import type { Notice, NewsPost, IslamicTopic, Resource, Activity } from '@/types/database';
 
 // ============================================================
 // Notices
 // ============================================================
 export async function getPublishedNotices(page = 1, limit = 10) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, count } = await supabase
@@ -19,7 +19,7 @@ export async function getPublishedNotices(page = 1, limit = 10) {
 }
 
 export async function getNoticeBySlug(slug: string): Promise<Notice | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('notices')
     .select('*')
@@ -30,7 +30,7 @@ export async function getNoticeBySlug(slug: string): Promise<Notice | null> {
 }
 
 export async function getFeaturedNotices(limit = 3): Promise<Notice[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('notices')
     .select('*')
@@ -45,7 +45,7 @@ export async function getFeaturedNotices(limit = 3): Promise<Notice[]> {
 // News
 // ============================================================
 export async function getPublishedNews(page = 1, limit = 10) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, count } = await supabase
@@ -59,7 +59,7 @@ export async function getPublishedNews(page = 1, limit = 10) {
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('news_posts')
     .select('*')
@@ -73,7 +73,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
 // Topics
 // ============================================================
 export async function getPublishedTopics(page = 1, limit = 12) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, count } = await supabase
@@ -87,7 +87,7 @@ export async function getPublishedTopics(page = 1, limit = 12) {
 }
 
 export async function getTopicBySlug(slug: string): Promise<IslamicTopic | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('islamic_topics')
     .select('*')
@@ -101,7 +101,7 @@ export async function getTopicBySlug(slug: string): Promise<IslamicTopic | null>
 // Resources
 // ============================================================
 export async function getPublishedResources(page = 1, limit = 12) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, count } = await supabase
@@ -115,7 +115,7 @@ export async function getPublishedResources(page = 1, limit = 12) {
 }
 
 export async function getResourceBySlug(slug: string): Promise<Resource | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('resources')
     .select('*')
@@ -129,7 +129,7 @@ export async function getResourceBySlug(slug: string): Promise<Resource | null> 
 // Activities
 // ============================================================
 export async function getUpcomingActivities(limit = 5): Promise<Activity[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const { data } = await supabase
     .from('activities')
     .select('*')
@@ -138,4 +138,29 @@ export async function getUpcomingActivities(limit = 5): Promise<Activity[]> {
     .order('event_date', { ascending: true })
     .limit(limit);
   return (data || []) as Activity[];
+}
+
+export async function getPublishedActivities(page = 1, limit = 12) {
+  const supabase = createStaticSupabaseClient();
+  const offset = (page - 1) * limit;
+
+  const { data, count } = await supabase
+    .from('activities')
+    .select('*', { count: 'exact' })
+    .eq('status', 'published')
+    .order('event_date', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  return { results: (data || []) as Activity[], totalCount: count || 0 };
+}
+
+export async function getActivityBySlug(slug: string): Promise<Activity | null> {
+  const supabase = createStaticSupabaseClient();
+  const { data } = await supabase
+    .from('activities')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .maybeSingle();
+  return data as Activity | null;
 }

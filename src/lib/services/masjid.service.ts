@@ -1,4 +1,4 @@
-import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
+import { createStaticSupabaseClient } from '@/lib/supabase/static';
 import type { Masjid, MasjidSearchResult, MasjidWithGeo, MasjidImage, DirectoryFilters, MasjidMapPoint } from '@/types/database';
 import { paginationConfig } from '@/config/site';
 
@@ -9,7 +9,7 @@ export async function searchMasjids(filters: DirectoryFilters): Promise<{
   results: MasjidSearchResult[];
   totalCount: number;
 }> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const limit = Math.min(filters.limit || paginationConfig.defaultPageSize, paginationConfig.maxPageSize);
   const offset = ((filters.page || 1) - 1) * limit;
 
@@ -41,7 +41,7 @@ export async function searchMasjids(filters: DirectoryFilters): Promise<{
 // Get single masjid by slug — with geography joins
 // ============================================================
 export async function getMasjidBySlug(slug: string): Promise<MasjidWithGeo | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase
     .from('masjids')
@@ -63,7 +63,7 @@ export async function getMasjidBySlug(slug: string): Promise<MasjidWithGeo | nul
 // Get masjid by central_code
 // ============================================================
 export async function getMasjidByCentralCode(code: string): Promise<Masjid | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase
     .from('masjids')
@@ -79,7 +79,7 @@ export async function getMasjidByCentralCode(code: string): Promise<Masjid | nul
 // Get masjid images
 // ============================================================
 export async function getMasjidImages(masjidId: string): Promise<MasjidImage[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data } = await supabase
     .from('masjid_images')
@@ -95,7 +95,7 @@ export async function getMasjidImages(masjidId: string): Promise<MasjidImage[]> 
 // Get masjids for a district/upazila (location pages)
 // ============================================================
 export async function getMasjidsByDistrict(districtId: number, page = 1, limit = 20) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, error, count } = await supabase
@@ -106,6 +106,8 @@ export async function getMasjidsByDistrict(districtId: number, page = 1, limit =
     .order('name_bn')
     .range(offset, offset + limit - 1);
 
+  if (error) console.error('Masjid list query failed:', error.message);
+
   return {
     results: (data || []) as Partial<Masjid>[],
     totalCount: count || 0,
@@ -113,7 +115,7 @@ export async function getMasjidsByDistrict(districtId: number, page = 1, limit =
 }
 
 export async function getMasjidsByUpazila(upazilaId: number, page = 1, limit = 20) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
   const offset = (page - 1) * limit;
 
   const { data, error, count } = await supabase
@@ -123,6 +125,8 @@ export async function getMasjidsByUpazila(upazilaId: number, page = 1, limit = 2
     .eq('status', 'published')
     .order('name_bn')
     .range(offset, offset + limit - 1);
+
+  if (error) console.error('Masjid list query failed:', error.message);
 
   return {
     results: (data || []) as Partial<Masjid>[],
@@ -136,7 +140,7 @@ export async function getMasjidsByUpazila(upazilaId: number, page = 1, limit = 2
 export async function getMasjidsInBounds(
   minLat: number, minLng: number, maxLat: number, maxLng: number
 ): Promise<MasjidMapPoint[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data, error } = await supabase.rpc('get_masjids_in_bounds', {
     p_min_lat: minLat,
@@ -154,7 +158,7 @@ export async function getMasjidsInBounds(
 // Recently added / verified (homepage)
 // ============================================================
 export async function getRecentMasjids(limit = 6) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data } = await supabase
     .from('masjids')
@@ -167,7 +171,7 @@ export async function getRecentMasjids(limit = 6) {
 }
 
 export async function getRecentlyVerified(limit = 6) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createStaticSupabaseClient();
 
   const { data } = await supabase
     .from('masjids')
