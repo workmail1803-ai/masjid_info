@@ -40,7 +40,8 @@ export default async function MosqueDashboardLayout({ children, params }: Layout
     .maybeSingle();
 
   const [canProfile, canPrayer, canStaff, canCommittee, canServices,
-         canAnnouncements, canEvents, canFinance, canZakat] = await Promise.all([
+         canAnnouncements, canEvents, canFinance, canZakat,
+         canCampaigns, canProjects, canDocuments] = await Promise.all([
     canAtMosque(masjidId, 'manage_profile'),
     canAtMosque(masjidId, 'manage_prayer_times'),
     canAtMosque(masjidId, 'manage_staff'),
@@ -50,6 +51,9 @@ export default async function MosqueDashboardLayout({ children, params }: Layout
     canAtMosque(masjidId, 'manage_events'),
     canAtMosque(masjidId, 'manage_finance'),
     canAtMosque(masjidId, 'manage_zakat'),
+    canAtMosque(masjidId, 'manage_campaigns'),
+    canAtMosque(masjidId, 'manage_projects'),
+    canAtMosque(masjidId, 'manage_documents'),
   ]);
 
   const base = `/dashboard/mosque/${masjidId}`;
@@ -64,6 +68,9 @@ export default async function MosqueDashboardLayout({ children, params }: Layout
     { href: `${base}/events`, label: 'কার্যক্রম', icon: '📅', show: canEvents },
     { href: `${base}/finance`, label: 'আয়-ব্যয়', icon: '💰', show: canFinance },
     { href: `${base}/zakat`, label: 'যাকাত', icon: '🤲', show: canZakat },
+    { href: `${base}/campaigns`, label: 'দান কর্মসূচি', icon: '🎯', show: canCampaigns },
+    { href: `${base}/projects`, label: 'প্রকল্প', icon: '🏗️', show: canProjects },
+    { href: `${base}/documents`, label: 'নথি', icon: '📁', show: canDocuments },
   ].filter((n) => n.show);
 
   return (
