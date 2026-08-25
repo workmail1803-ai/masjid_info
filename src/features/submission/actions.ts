@@ -1,6 +1,5 @@
 'use server';
 
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/server';
 
 export async function submitMosque(formData: FormData): Promise<{ success: boolean; error?: string }> {
@@ -26,7 +25,8 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
       return { success: false, error: 'মসজিদের নাম, বিভাগ, এবং জেলা আবশ্যক।' };
     }
 
-    const supabase = await createServerSupabaseClient();
+    // Use admin client to bypass RLS for public submissions
+    const supabase = createAdminClient();
 
     // Insert submission
     const { data: submission, error } = await supabase.from('masjid_submissions').insert({
@@ -49,7 +49,7 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
     }).select('id').single();
 
     if (error) {
-      console.error('Submission error:', error);
+      console.error('Submission insert error:', error.message, error.details);
       return { success: false, error: 'জমা দেওয়া সম্ভব হয়নি। আবার চেষ্টা করুন।' };
     }
 
@@ -58,15 +58,12 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
     const validImages = images.filter(f => f instanceof File && f.size > 0);
 
     if (validImages.length > 0 && submission?.id) {
-      // Use admin client for storage upload (no RLS restrictions on bucket)
-      const adminClient = createAdminClient();
-
       for (let i = 0; i < validImages.length; i++) {
         const file = validImages[i];
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const path = `${submission.id}/${Date.now()}-${i}.${ext}`;
 
-        const { error: uploadError } = await adminClient.storage
+        const { error: uploadError } = await supabase.storage
           .from('submissions')
           .upload(path, file, {
             contentType: file.type,
@@ -75,7 +72,6 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
 
         if (uploadError) {
           console.error(`Image upload ${i} failed:`, uploadError.message);
-          // Don't fail the whole submission for image upload errors
         }
       }
     }
