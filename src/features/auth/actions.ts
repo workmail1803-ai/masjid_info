@@ -107,6 +107,80 @@ export async function signUp(
 }
 
 // ============================================================
+// Email code (OTP) sign-in
+// ============================================================
+// Supabase emails a six-digit code. Nothing is created or confirmed until the
+// code comes back, so possession of the inbox is what proves identity — no
+// password to choose, forget, or reuse from another site.
+
+const emailOnlySchema = z.object({
+  email: z.string().email('সঠিক ইমেইল ঠিকানা দিন।'),
+});
+
+export async function sendEmailCode(
+  _prev: AuthFormState,
+  formData: FormData
+): Promise<AuthFormState> {
+  const parsed = emailOnlySchema.safeParse({ email: formData.get('email') });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'ইমেইল সঠিক নয়।' };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email: parsed.data.email,
+    options: {
+      // Creates the account on first sign-in. The handle_new_user() trigger
+      // gives it the default 'user' role; nothing here can raise that.
+      shouldCreateUser: true,
+      data: { full_name: (formData.get('full_name') as string)?.trim() || undefined },
+    },
+  });
+
+  if (error) {
+    if (error.status === 429) {
+      return { error: 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।' };
+    }
+    console.error('OTP send failed:', error.message);
+    return { error: 'কোড পাঠানো যায়নি। ইমেইল ঠিকানা যাচাই করুন।' };
+  }
+
+  return { success: 'আপনার ইমেইলে ৬ সংখ্যার কোড পাঠানো হয়েছে।' };
+}
+
+const verifySchema = z.object({
+  email: z.string().email(),
+  token: z.string().trim().regex(/^\d{6}$/, '৬ সংখ্যার কোড দিন।'),
+});
+
+export async function verifyEmailCode(
+  _prev: AuthFormState,
+  formData: FormData
+): Promise<AuthFormState> {
+  const parsed = verifySchema.safeParse({
+    email: formData.get('email'),
+    token: formData.get('token'),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'কোড সঠিক নয়।' };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.token,
+    type: 'email',
+  });
+
+  if (error) {
+    return { error: 'কোডটি সঠিক নয় বা মেয়াদ শেষ হয়ে গেছে।' };
+  }
+
+  revalidatePath('/', 'layout');
+  redirect(safeRedirect(formData.get('redirect')));
+}
+
+// ============================================================
 // Sign out
 // ============================================================
 export async function signOut(): Promise<void> {

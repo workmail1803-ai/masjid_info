@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireModerator } from '@/lib/auth/dal';
+import { PanelHeader } from '@/components/layout/PanelHeader';
 import { signOut } from '@/features/auth/actions';
 
 /**
@@ -23,7 +24,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await requireModerator('/admin');
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
+    <>
+    <PanelHeader label="প্ল্যাটফর্ম প্রশাসন" userLabel={user.fullName || user.email} roleLabel={user.role} homeHref="/admin" />
+    <div className="flex min-h-[calc(100vh-3.5rem)]">
       {/* Sidebar */}
       <aside className="hidden lg:block w-56 shrink-0 bg-surface-elevated border-r border-border overflow-y-auto">
         <div className="p-4">
@@ -64,5 +67,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Content */}
       <div className="flex-1 min-w-0 p-4 md:p-6 lg:p-8">{children}</div>
     </div>
+    </>
   );
 }

@@ -56,9 +56,9 @@ export default function RootLayout({
         className="min-h-screen flex flex-col"
         style={{ fontFamily: 'var(--font-bangla), var(--font-latin), sans-serif' }}
       >
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {/* Header/Footer belong to the (site) group, not here — the management
+            panels supply their own chrome so their nav cannot navigate away. */}
+        {children}
       </body>
     </html>
   );

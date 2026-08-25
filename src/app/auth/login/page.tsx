@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { LoginForm } from '@/features/auth/AuthForms';
+import { LoginTabs } from '@/features/auth/LoginTabs';
 import { getCurrentUser } from '@/lib/auth/dal';
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <p className="text-sm text-ink-muted mb-6">
         মসজিদ ব্যবস্থাপনা প্যানেলে প্রবেশ করুন।
       </p>
-      <LoginForm redirectTo={redirectTo} />
+      <LoginTabs redirectTo={redirectTo} />
     </>
   );
 }
