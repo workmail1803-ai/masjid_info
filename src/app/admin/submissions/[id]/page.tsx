@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireModerator } from '@/lib/auth/dal';
 import type { MasjidSubmission } from '@/types/database';
+import { toBanglaDigits as toBn } from '@/lib/services/mosque.service';
 import { ApproveForm, RejectForm } from '@/features/admin/SubmissionReview';
 
 interface PageProps {
@@ -23,6 +24,15 @@ export default async function SubmissionReviewPage({ params }: PageProps) {
   if (!submission) notFound();
 
   const s = submission as MasjidSubmission;
+
+  // Resolve storage keys to viewable URLs. The `submissions` bucket is public,
+  // so a plain public URL works; if it is ever made private, swap this for
+  // createSignedUrls() and the rest of the page keeps working unchanged.
+  const imagePaths = s.image_paths ?? [];
+  const imageUrls = imagePaths.map((path) => ({
+    path,
+    url: supabase.storage.from('submissions').getPublicUrl(path).data.publicUrl,
+  }));
 
   const fields: { label: string; value: string | number | null | undefined }[] = [
     { label: 'মসজিদের নাম (বাংলা)', value: s.name_bn },
@@ -54,6 +64,46 @@ export default async function SubmissionReviewPage({ params }: PageProps) {
         <Link href="/admin/submissions" className="btn btn-ghost btn-sm">← ফিরে যান</Link>
         <h1 className="text-xl font-bold text-ink">জমা পর্যালোচনা</h1>
         <span className={`badge ${statusColors[s.status] || 'badge-pending'}`}>{s.status}</span>
+      </div>
+
+      {/* Submitted photos */}
+      <div className="card p-6 mb-6">
+        <h2 className="font-semibold text-ink mb-4">
+          জমাকৃত ছবি
+          <span className="ml-2 text-xs font-normal text-ink-muted">
+            ({toBn(imageUrls.length)}টি)
+          </span>
+        </h2>
+
+        {imageUrls.length === 0 ? (
+          <p className="text-sm text-ink-muted">এই জমার সাথে কোনো ছবি দেওয়া হয়নি।</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {imageUrls.map(({ path, url }, i) => (
+                <a
+                  key={path}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-md overflow-hidden border border-border hover:border-accent transition-colors"
+                  title="পূর্ণ আকারে দেখুন"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`জমাকৃত ছবি ${i + 1}`}
+                    className="w-full aspect-[4/3] object-cover bg-surface-alt"
+                    loading="lazy"
+                  />
+                </a>
+              ))}
+            </div>
+            <p className="text-xs text-ink-faint mt-3">
+              অনুমোদন করলে এই ছবিগুলো মসজিদের প্রোফাইলে যুক্ত হবে।
+            </p>
+          </>
+        )}
       </div>
 
       {/* Submission Details */}

@@ -179,6 +179,7 @@ export interface MasjidRating {
 
 // Submission
 export interface MasjidSubmission {
+  image_paths: string[] | null;
   id: string;
   name_bn: string;
   name_en: string | null;

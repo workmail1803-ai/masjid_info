@@ -53,25 +53,52 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
       return { success: false, error: 'জমা দেওয়া সম্ভব হয়নি। আবার চেষ্টা করুন।' };
     }
 
-    // Handle image uploads
+    // ----- Image uploads -----
+    // The client component checks type and size too, but that is only a UX
+    // convenience: a crafted POST bypasses it entirely, so re-validate here.
+    const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    const EXT_FOR = new Map([
+      ['image/jpeg', 'jpg'], ['image/png', 'png'], ['image/webp', 'webp'],
+    ]);
+    const MAX_BYTES = 5 * 1024 * 1024;
+    const MAX_FILES = 3;
+
     const images = formData.getAll('images') as File[];
-    const validImages = images.filter(f => f instanceof File && f.size > 0);
+    const validImages = images
+      .filter((f) => f instanceof File && f.size > 0 && f.size <= MAX_BYTES && ALLOWED.has(f.type))
+      .slice(0, MAX_FILES);
 
     if (validImages.length > 0 && submission?.id) {
+      const uploadedPaths: string[] = [];
+
       for (let i = 0; i < validImages.length; i++) {
         const file = validImages[i];
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        // Extension comes from the verified MIME type, never from the
+        // user-supplied filename (which could carry a misleading suffix).
+        const ext = EXT_FOR.get(file.type) ?? 'jpg';
         const path = `${submission.id}/${Date.now()}-${i}.${ext}`;
 
         const { error: uploadError } = await supabase.storage
           .from('submissions')
-          .upload(path, file, {
-            contentType: file.type,
-            upsert: false,
-          });
+          .upload(path, file, { contentType: file.type, upsert: false });
 
         if (uploadError) {
           console.error(`Image upload ${i} failed:`, uploadError.message);
+          continue;
+        }
+        uploadedPaths.push(path);
+      }
+
+      // Record where they landed. Without this the reviewer cannot see the
+      // photos and approval silently drops them.
+      if (uploadedPaths.length > 0) {
+        const { error: pathError } = await supabase
+          .from('masjid_submissions')
+          .update({ image_paths: uploadedPaths })
+          .eq('id', submission.id);
+
+        if (pathError) {
+          console.error('Recording image paths failed:', pathError.message);
         }
       }
     }
