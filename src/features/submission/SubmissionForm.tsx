@@ -5,6 +5,8 @@ import { useState, useCallback } from 'react';
 import type { Division, District } from '@/types/database';
 import { structureTypeLabels } from '@/types/database';
 import { submitMosque } from './actions';
+import { LocationPicker } from './LocationPicker';
+import { ImageUpload } from './ImageUpload';
 
 interface Props {
   divisions: Division[];
@@ -83,6 +85,13 @@ export function SubmissionForm({ divisions, districts }: Props) {
         </div>
       </fieldset>
 
+      {/* Image Upload */}
+      <fieldset className="card p-5 space-y-4">
+        <legend className="text-sm font-semibold text-ink">মসজিদের ছবি</legend>
+        <p className="text-xs text-ink-muted -mt-2">মসজিদের সামনের বা ভিতরের ছবি আপলোড করুন।</p>
+        <ImageUpload maxFiles={3} maxSizeMb={5} />
+      </fieldset>
+
       {/* Location */}
       <fieldset className="card p-5 space-y-4">
         <legend className="text-sm font-semibold text-ink">অবস্থান</legend>
@@ -128,6 +137,14 @@ export function SubmissionForm({ divisions, districts }: Props) {
         <div>
           <label htmlFor="address_bn" className="block text-xs text-ink-muted mb-1">ঠিকানা</label>
           <textarea id="address_bn" name="address_bn" rows={2} className="input" placeholder="সম্পূর্ণ ঠিকানা" />
+        </div>
+
+        {/* Google Maps Location Picker */}
+        <div className="border-t border-border pt-4">
+          <p className="text-xs text-ink-muted mb-3">
+            📍 মসজিদের সঠিক অবস্থান — গুগল ম্যাপ লিংক পেস্ট করুন অথবা GPS ব্যবহার করুন
+          </p>
+          <LocationPicker />
         </div>
       </fieldset>
 

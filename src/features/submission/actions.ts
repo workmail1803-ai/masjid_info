@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 export async function submitMosque(formData: FormData): Promise<{ success: boolean; error?: string }> {
   try {
@@ -17,6 +18,8 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
     const email = formData.get('email') as string;
     const submitter_name = formData.get('submitter_name') as string;
     const submitter_contact = formData.get('submitter_contact') as string;
+    const latitude = formData.get('latitude') as string;
+    const longitude = formData.get('longitude') as string;
 
     // Validate required fields
     if (!name_bn || !division_id || !district_id) {
@@ -25,7 +28,8 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
 
     const supabase = await createServerSupabaseClient();
 
-    const { error } = await supabase.from('masjid_submissions').insert({
+    // Insert submission
+    const { data: submission, error } = await supabase.from('masjid_submissions').insert({
       name_bn: name_bn.trim(),
       name_en: name_en?.trim() || null,
       division_id: Number(division_id),
@@ -37,14 +41,43 @@ export async function submitMosque(formData: FormData): Promise<{ success: boole
       description_bn: description_bn?.trim() || null,
       contact_number: contact_number?.trim() || null,
       email: email?.trim() || null,
+      latitude: latitude ? Number(latitude) : null,
+      longitude: longitude ? Number(longitude) : null,
       submitter_name: submitter_name?.trim() || null,
       submitter_contact: submitter_contact?.trim() || null,
       status: 'pending_review',
-    });
+    }).select('id').single();
 
     if (error) {
       console.error('Submission error:', error);
       return { success: false, error: 'জমা দেওয়া সম্ভব হয়নি। আবার চেষ্টা করুন।' };
+    }
+
+    // Handle image uploads
+    const images = formData.getAll('images') as File[];
+    const validImages = images.filter(f => f instanceof File && f.size > 0);
+
+    if (validImages.length > 0 && submission?.id) {
+      // Use admin client for storage upload (no RLS restrictions on bucket)
+      const adminClient = createAdminClient();
+
+      for (let i = 0; i < validImages.length; i++) {
+        const file = validImages[i];
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const path = `${submission.id}/${Date.now()}-${i}.${ext}`;
+
+        const { error: uploadError } = await adminClient.storage
+          .from('submissions')
+          .upload(path, file, {
+            contentType: file.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(`Image upload ${i} failed:`, uploadError.message);
+          // Don't fail the whole submission for image upload errors
+        }
+      }
     }
 
     return { success: true };
